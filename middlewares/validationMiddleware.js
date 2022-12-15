@@ -1,5 +1,6 @@
 const Joi = require('joi');
 
+// Contacts schemes
 const newContactSchema = Joi.object({
     name: Joi.string().pattern(/^[a-zA-Z]+(([',. -][a-zA-Z ])?[a-zA-Z]*)*$/).min(3).max(30).required(),
     email: Joi.string().email().required(),
@@ -11,6 +12,12 @@ const updateContactSchema = Joi.object({
     phone: Joi.string().min(6).max(14).pattern(/\(?([0-9]{3})\)?([ .-]?)([0-9]{3})\2([0-9]{4})/).allow(""),
 })
 
+// Auth schemes
+const registerSchema = Joi.object({
+    email: Joi.string().email().required(),
+    password: Joi.required(),
+})
+
 module.exports = {
     addContactValidation: (req, res, next) => { 
         const validationResult = newContactSchema.validate(req.body);
@@ -19,6 +26,7 @@ module.exports = {
         }
         next()
     },
+
     updateContactValidation: (req, res, next) => { 
         const { name, email, phone } = req.body;
         if (name === '' && email === '' && phone === '') {
@@ -31,10 +39,21 @@ module.exports = {
         }
         next()
     },
+    
     updateStatusValidation: (req, res, next) => { 
         const { favorite } = req.body;
         if (favorite === '') {
             return res.status(400).json({ "message": "missing field favorite" })
+        }
+        next()
+    },
+
+    registerValidation: (req, res, next) => { 
+        const { email, password } = req.body;
+
+        const validationResult = registerSchema.validate({ email, password }, { abortEarly: false });
+        if (validationResult.error) {
+            return res.status(400).json({ "message": validationResult.error.details })
         }
         next()
     }
