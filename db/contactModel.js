@@ -1,5 +1,7 @@
 
 const mongoose = require('mongoose');
+// const { User } = require('./userModel')
+require('./userModel');
 
 const contactSchema = new mongoose.Schema({
     name: {
@@ -15,7 +17,11 @@ const contactSchema = new mongoose.Schema({
     favorite: {
       type: Boolean,
       default: false,
-    },
+  },
+    owner: {
+      type:  mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    }
 });
 
 const Contact = mongoose.model('Contact', contactSchema);
