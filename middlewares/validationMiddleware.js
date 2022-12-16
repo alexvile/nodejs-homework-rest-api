@@ -1,4 +1,7 @@
 const Joi = require('joi');
+// const { BadRequestError } = require('../helpers/errors');
+
+// todo- use custom errors instead return res.
 
 // Contacts schemes
 const newContactSchema = Joi.object({
@@ -13,9 +16,9 @@ const updateContactSchema = Joi.object({
 })
 
 // Auth schemes
-const registerSchema = Joi.object({
+const authSchema = Joi.object({
     email: Joi.string().email().required(),
-    password: Joi.required(),
+    password: Joi.string().required(),
 })
 
 module.exports = {
@@ -35,7 +38,7 @@ module.exports = {
 
         const validationResult = updateContactSchema.validate(req.body);
         if (validationResult.error) {
-            return res.status(400).json({ "d": validationResult.error.details })
+            return res.status(400).json({ "message": validationResult.error.details })
         }
         next()
     },
@@ -48,11 +51,12 @@ module.exports = {
         next()
     },
 
-    registerValidation: (req, res, next) => { 
+    authValidation: (req, res, next) => { 
         const { email, password } = req.body;
 
-        const validationResult = registerSchema.validate({ email, password }, { abortEarly: false });
+        const validationResult = authSchema.validate({ email, password }, { abortEarly: false });
         if (validationResult.error) {
+            // throw new BadRequestError(JSON.stringify({ "message": validationResult.error.details }))
             return res.status(400).json({ "message": validationResult.error.details })
         }
         next()
