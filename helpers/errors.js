@@ -10,6 +10,12 @@ class BadRequestError extends CustomError {
         this.status = 400;
     }
 }
+class NotFoundError extends CustomError { 
+        constructor(message) { 
+        super(message);
+        this.status = 404;
+    }
+}
 class RegistrationConflictError extends CustomError { 
         constructor(message) { 
         super(message);
@@ -24,5 +30,5 @@ class NotAuthorizedError extends CustomError {
 }
 
 module.exports = {
-    CustomError, NotAuthorizedError, RegistrationConflictError, BadRequestError
+    CustomError, NotAuthorizedError, RegistrationConflictError, BadRequestError, NotFoundError
 }
