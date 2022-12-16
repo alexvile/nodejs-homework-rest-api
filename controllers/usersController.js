@@ -1,32 +1,22 @@
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-require('dotenv').config();
-
 const { register, login } = require('../services/usersServices');
 
 const registerController = async (req, res) => { 
-    const { password, email, subscription } = req.body;
-    const newUser = await register(password, email, subscription);
-    return res.status(200).json({ user: newUser });
+    const newUser = await register(req.body);
+    const { email, subscription } = newUser;
+    return res.status(201).json({ email, subscription  });
 };
 
 const loginController = async (req, res) => { 
-    const { password, email } = req.body;
-    const user = await login(email);
-
-    if (!user) { 
-        return res.status(401).json({"message": `Email is wrong `})
-    }
-
-    if (!await bcrypt.compare(password, user.password)) { 
-        return res.status(401).json({"message": `Password is wrong`})
-    }
-    // todo- token validation
-    const token = jwt.sign({_id: user._id, subscription: user.subscription }, process.env.JWT_SECRET);
-
-    return res.status(200).json({ token, user });
+    const { user, token } = await login(req.body);
+    const { email, subscription } = user; 
+    return res.status(200).json({ token, user: { email, subscription } });
 };
 
+const getCurrentController = async (req, res) => { 
+    const { email, subscription } = req.user;
+    return res.status(200).json({ email, subscription });
+}
+
 module.exports = {
-    registerController, loginController
+    registerController, loginController, getCurrentController
 };
