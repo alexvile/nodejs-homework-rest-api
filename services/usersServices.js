@@ -38,6 +38,10 @@ const login = async ({ email, password }) => {
     return { token, user };
 }
 
+const logout = async (userId) => { 
+    await User.findByIdAndUpdate(userId, { token: null });
+}
+
 module.exports = {
-    register, login
+    register, login, logout
 }
