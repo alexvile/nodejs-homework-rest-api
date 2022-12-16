@@ -20,12 +20,15 @@ const authMiddleware = async (req, res, next) => {
         // const user = jwt.decode(token, process.env.JWT_SECRET);
         const user = await User.findById(_id);
 
-        if (!user) { 
+        if (!user || !user.token) { 
             throw new NotAuthorizedError('Not authorized')
+        }
+        if (user.token !== token) {
+            // console.log('tokens are different');
+            throw new NotAuthorizedError('Not authorized');
         }
 
         req.user = user;
-        // req.token = token;
         next();
     } catch (error) {
         next (new NotAuthorizedError('Invalid token'));
