@@ -2,8 +2,9 @@ const { Contact } = require('../db/contactModel');
 const { NotFoundError } = require('../helpers/errors');
 
 
-const getContacts = async (userID) => { 
-    const contacts = await Contact.find({ owner: userID }, {__v: 0}).populate("owner", "_id email");
+const getContacts = async (searchOptions, skip, limit) => { 
+
+    const contacts = await Contact.find(searchOptions, { __v: 0 }, {skip, limit}).populate("owner", "_id email");
     return contacts;
 }
 

@@ -3,7 +3,16 @@ const { getContacts, getContactById, addContact, removeContact, updateContact, u
 
 const getContactsController = async (req, res) => { 
     const { _id: userId } = req.user
-    const contacts = await getContacts(userId);
+    const { page = 1, limit = 10, favorite = null } = req.query
+
+    const searchOptions = { owner: userId }
+      if (favorite !== null) {
+          searchOptions.favorite = favorite;
+    }
+
+    const skip = (page - 1) * limit;
+
+    const contacts = await getContacts(searchOptions, skip, Number(limit));
     res.status(200).json({ data: contacts});
 }
 
