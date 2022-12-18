@@ -6,7 +6,6 @@ const { User } = require('../db/userModel');
 const { RegistrationConflictError, NotAuthorizedError } = require('../helpers/errors');
 
 
-
 const register = async ({ password, email, subscription }) => { 
     if (await User.findOne({ email })) {
         throw new RegistrationConflictError('Email in use');
@@ -29,8 +28,8 @@ const login = async ({ email, password }) => {
     };
 
     const payload = {
-        _id: user._id,
-        subscription: user.subscription
+        _id: user._id
+        // subscription: user.subscription
     };
 
     const token = jwt.sign(payload, process.env.JWT_SECRET, {expiresIn: "2d"});
@@ -42,6 +41,12 @@ const logout = async (userId) => {
     await User.findByIdAndUpdate(userId, { token: null });
 }
 
+const updateSubscription = async (userId, subscriptionObj) => { 
+    const { subscription } = subscriptionObj;
+    const user = await User.findByIdAndUpdate(userId, { subscription: subscription }, { new: true });
+    return user;
+}
+
 module.exports = {
-    register, login, logout
+    register, login, logout, updateSubscription
 }
