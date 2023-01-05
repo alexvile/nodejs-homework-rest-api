@@ -3,7 +3,12 @@ const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const gravatar = require('gravatar');
 const fs = require('fs/promises');
-const path = require('path')
+const path = require('path');
+const Jimp = require('jimp');
+
+
+    
+
 
 const { User } = require('../db/userModel');
 const { RegistrationConflictError, NotAuthorizedError } = require('../helpers/errors');
@@ -58,8 +63,13 @@ const updateAvatar = async (req) => {
     const filename = `${_id}_${originalname}`
 
     const resultUpload = path.join(avatarsDir, filename);
-    await fs.rename(tempUpload, resultUpload)
+    await fs.rename(tempUpload, resultUpload);
+    
+    const imgToResize = await Jimp.read(resultUpload);
+    imgToResize.resize(250, 250).write(resultUpload);
+
     const avatarURL = path.join("avatars", filename)
+
     await User.findByIdAndUpdate(_id, { avatarURL });
     return avatarURL
 }
