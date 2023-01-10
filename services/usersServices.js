@@ -1,6 +1,14 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
+const gravatar = require('gravatar');
+const fs = require('fs/promises');
+const path = require('path');
+const Jimp = require('jimp');
+
+
+    
+
 
 const { User } = require('../db/userModel');
 const { RegistrationConflictError, NotAuthorizedError } = require('../helpers/errors');
@@ -10,8 +18,8 @@ const register = async ({ password, email, subscription }) => {
     if (await User.findOne({ email })) {
         throw new RegistrationConflictError('Email in use');
     }
-
-    const user = new User({ password, email, subscription });
+    const avatarURL = gravatar.url(email)
+    const user = new User({ password, email, subscription, avatarURL });
     await user.save();
     return user;
 }
@@ -47,6 +55,25 @@ const updateSubscription = async (userId, subscriptionObj) => {
     return user;
 }
 
+const avatarsDir = path.join(__dirname, "../", "public", "avatars");
+
+const updateAvatar = async (req) => { 
+    const { path: tempUpload, originalname } = req.file;
+    const { _id } = req.user
+    const filename = `${_id}_${originalname}`
+
+    const resultUpload = path.join(avatarsDir, filename);
+    await fs.rename(tempUpload, resultUpload);
+    
+    const imgToResize = await Jimp.read(resultUpload);
+    imgToResize.resize(250, 250).write(resultUpload);
+
+    const avatarURL = path.join("avatars", filename)
+
+    await User.findByIdAndUpdate(_id, { avatarURL });
+    return avatarURL
+}
+
 module.exports = {
-    register, login, logout, updateSubscription
+    register, login, logout, updateSubscription, updateAvatar
 }
