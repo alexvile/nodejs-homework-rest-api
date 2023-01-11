@@ -5,9 +5,10 @@ const gravatar = require('gravatar');
 const fs = require('fs/promises');
 const path = require('path');
 const Jimp = require('jimp');
-const {nanoid} = require("nanoid")
+const { v4: uuidv4 } = require('uuid');
+const { verificationEmailTpl, resendVerificationEmailTpl } = require('../email/emailTemplates')
 
-const { sendEmail } = require('../helpers/sendEmail');
+const { sendMail } = require('../helpers/sendEmail');
 
 const { User } = require('../db/userModel');
 const { RegistrationConflictError, NotAuthorizedError, NotFoundError, BadRequestError } = require('../helpers/errors');
@@ -19,17 +20,17 @@ const register = async ({ password, email, subscription }) => {
     }
     const avatarURL = gravatar.url(email)
 
-    const verificationToken = nanoid();
+    const verificationToken = uuidv4();
 
     const user = new User({ password, email, subscription, avatarURL, verificationToken });
     await user.save();
 
     const mail = {
         to: email,
-        subject: "Підтвердження реєстрації на сайті",
-        html: `<a href="http://localhost:3000/api/users/verify/${verificationToken}" target="_blank"> Натисніть для підтвердження реєстрації </a>`
+        subject: "Верифікація емейл (тестування)",
+        html: verificationEmailTpl(verificationToken)
     }
-    await sendEmail(mail)
+    await sendMail(mail);
     return user;
 }
 
@@ -86,10 +87,10 @@ const resendVerifyEmail = async (email) => {
     };
     const mail = {
         to: email,
-        subject: "Підтвердження реєстрації на сайті",
-        html: `<a href="http://localhost:3000/api/users/verify/${user.verificationToken}" target="_blank"> Натисніть для підтвердження реєстрації </a>`
+        subject: "Повторна верифікація емейл (тестування)",
+        html: resendVerificationEmailTpl(user.verificationToken)
     }
-    await sendEmail(mail)
+    await sendMail(mail)
 }
 
 const avatarsDir = path.join(__dirname, "../", "public", "avatars");
