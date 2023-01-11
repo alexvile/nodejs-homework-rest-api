@@ -13,24 +13,13 @@ const nodemailerConfig = {
     }
 }
 
-
 const transport = nodemailer.createTransport(nodemailerConfig);
-
-// const email = {
-//   to: "olexiy.solotvinskiy@gmail.com",
-//   from: "alexei20293@meta.ua",
-//   subject: "nodemailer test",
-//   text: "Привет. Мы тестируем отправку писем!",
-// }
 
 const sendMail = async (data) => {
     const email = {...data, from: "alexei20293@meta.ua"}
-    try {
-        await transport.sendMail(email)
-        console.log("Email send successfull");
-    } catch (error) {
-        console.log(error)
-    }
+    // console.log(email);
+    await transport.sendMail(email)
+    console.log("Email send successfull");
 }
 
 module.exports = { sendMail };

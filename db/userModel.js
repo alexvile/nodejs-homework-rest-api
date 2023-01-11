@@ -23,15 +23,15 @@ const userSchema = new mongoose.Schema({
   token: {
     type: String,
     default: null,
-    },
-    verify: {
-      type: Boolean,
-      default: false,
-    },
-    verificationToken: {
-      type: String,
-      required: [true, 'Verify token is required'],
-    }
+  },
+  verify: {
+    type: Boolean,
+    default: false,
+  },
+  verificationToken: {
+    type: String,
+    required: [true, 'Verify token is required'],
+  }
 });
 userSchema.pre('save', async function () {
   if (this.isNew) {
