@@ -2,6 +2,7 @@ const Joi = require('joi');
 // const { BadRequestError } = require('../helpers/errors');
 
 // todo- use custom errors instead return res.
+// todo use validMiddleware(schemaOfValidate)
 
 // Contacts schemes
 const newContactSchema = Joi.object({
@@ -59,6 +60,16 @@ module.exports = {
         const { email, password } = req.body;
 
         const validationResult = authSchema.validate({ email, password }, { abortEarly: false });
+        if (validationResult.error) {
+            // throw new BadRequestError(JSON.stringify({ "message": validationResult.error.details }))
+            return res.status(400).json({ "message": validationResult.error.details })
+        }
+        next()
+    }, 
+    emailValidation: (req, res, next) => { 
+        const { email } = req.body;
+        
+        const validationResult = authSchema.validate({ email });
         if (validationResult.error) {
             // throw new BadRequestError(JSON.stringify({ "message": validationResult.error.details }))
             return res.status(400).json({ "message": validationResult.error.details })

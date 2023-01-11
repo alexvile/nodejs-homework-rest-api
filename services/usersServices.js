@@ -5,13 +5,12 @@ const gravatar = require('gravatar');
 const fs = require('fs/promises');
 const path = require('path');
 const Jimp = require('jimp');
+const {nanoid} = require("nanoid")
 
-
-    
-
+const { sendEmail } = require('../helpers/sendEmail');
 
 const { User } = require('../db/userModel');
-const { RegistrationConflictError, NotAuthorizedError } = require('../helpers/errors');
+const { RegistrationConflictError, NotAuthorizedError, NotFoundError, BadRequestError } = require('../helpers/errors');
 
 
 const register = async ({ password, email, subscription }) => { 
@@ -19,8 +18,18 @@ const register = async ({ password, email, subscription }) => {
         throw new RegistrationConflictError('Email in use');
     }
     const avatarURL = gravatar.url(email)
-    const user = new User({ password, email, subscription, avatarURL });
+
+    const verificationToken = nanoid();
+
+    const user = new User({ password, email, subscription, avatarURL, verificationToken });
     await user.save();
+
+    const mail = {
+        to: email,
+        subject: "Підтвердження реєстрації на сайті",
+        html: `<a href="http://localhost:3000/api/users/verify/${verificationToken}" target="_blank"> Натисніть для підтвердження реєстрації </a>`
+    }
+    await sendEmail(mail)
     return user;
 }
 
@@ -34,6 +43,9 @@ const login = async ({ email, password }) => {
         // return res.status(401).json({ "message": `Password is wrong` })
         throw new NotAuthorizedError('Email or password is wrong');
     };
+    if(!user.verify) {
+        throw new NotAuthorizedError('Email not verify');
+    }
 
     const payload = {
         _id: user._id
@@ -55,6 +67,31 @@ const updateSubscription = async (userId, subscriptionObj) => {
     return user;
 }
 
+const verifyEmail = async (verificationToken) => {
+    const user = await User.findOne({verificationToken});
+    if(!user) {
+        throw new NotAuthorizedError('Not found verification token');
+    }
+    await User.findByIdAndUpdate(user._id, {verify: true, verificationToken: ""});
+   
+}
+
+const resendVerifyEmail = async (email) => {
+    const user = await User.findOne({email})
+    if(!user) {
+        throw new NotFoundError('User not found');
+    };
+    if(user.verify) {
+        throw new BadRequestError('User already verify');
+    };
+    const mail = {
+        to: email,
+        subject: "Підтвердження реєстрації на сайті",
+        html: `<a href="http://localhost:3000/api/users/verify/${user.verificationToken}" target="_blank"> Натисніть для підтвердження реєстрації </a>`
+    }
+    await sendEmail(mail)
+}
+
 const avatarsDir = path.join(__dirname, "../", "public", "avatars");
 
 const updateAvatar = async (req) => { 
@@ -74,6 +111,7 @@ const updateAvatar = async (req) => {
     return avatarURL
 }
 
+
 module.exports = {
-    register, login, logout, updateSubscription, updateAvatar
+    register, login, logout, updateSubscription, updateAvatar, verifyEmail, resendVerifyEmail
 }
