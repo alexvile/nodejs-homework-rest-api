@@ -71,7 +71,7 @@ const updateSubscription = async (userId, subscriptionObj) => {
 const verifyEmail = async (verificationToken) => {
     const user = await User.findOne({verificationToken});
     if(!user) {
-        throw new NotAuthorizedError('Not found verification token');
+        throw new NotFoundError('User not found');
     }
     await User.findByIdAndUpdate(user._id, {verify: true, verificationToken: ""});
    
@@ -83,7 +83,7 @@ const resendVerifyEmail = async (email) => {
         throw new NotFoundError('User not found');
     };
     if(user.verify) {
-        throw new BadRequestError('User already verify');
+        throw new BadRequestError('Verification has already been passed');
     };
     const mail = {
         to: email,

@@ -41,16 +41,16 @@ const updateAvatarController = async (req, res) => {
 const verifyEmailController = async (req, res) => {
     const {verificationToken} = req.params;
     await verifyEmail(verificationToken);
-    res.json({
-        message: "Email verify success"
+    res.status(200).json({
+        message: "Verification successfull"
     })
 }
 
 const resendVerifyEmailController = async (req, res) => {
     const {email} = req.body;
     await resendVerifyEmail(email);
-    res.json({
-        message: "Email verify resend"
+    res.status(200).json({
+        message: "Verification email resent"
     })
 }
 
