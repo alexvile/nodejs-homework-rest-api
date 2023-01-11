@@ -21,6 +21,9 @@ const authSchema = Joi.object({
     email: Joi.string().email().required(),
     password: Joi.string().pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')).required(),
 })
+const emailSchema = Joi.object({
+    email: Joi.string().email().required(),
+})
 
 const subscriptionSchema = Joi.object({
     subscription: Joi.string().valid('starter', 'pro', 'business'),
@@ -69,7 +72,7 @@ module.exports = {
     emailValidation: (req, res, next) => { 
         const { email } = req.body;
         
-        const validationResult = authSchema.validate({ email });
+        const validationResult = emailSchema.validate({ email });
         if (validationResult.error) {
             // throw new BadRequestError(JSON.stringify({ "message": validationResult.error.details }))
             return res.status(400).json({ "message": validationResult.error.details })
